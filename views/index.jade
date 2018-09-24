@@ -1,0 +1,16 @@
+extends layout
+
+block content
+	h1 Print
+	p Please choose file to print
+
+	form(action="/print" method="post" enctype="multipart/form-data")
+		div.form-group
+			label(for="id") Andrew ID
+			input(type="text" class="form-control" name="id" id="id" placeholder="Andrew ID")
+		div.form-group
+			label(for="file") File to Print
+			input(type="file" class="form-control-file" name="file" id="file")
+		div.col-sm-12.form-group(style="padding: 0;")
+			button.btn.btn-block(type="submit" style="background-color: #bb0000; color: #ffffff;") Send
+
