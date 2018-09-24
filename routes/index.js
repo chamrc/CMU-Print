@@ -17,7 +17,7 @@ if (!String.prototype.format) {
 	};
 }
 
-const FORMAT = 'sudo lpadmin -p "{0}" -v lpd://{0}@printing.andrew.cmu.edu/andrew -P public/CMUGeneric.ppd; sudo cupsenable {0}; sudo cupsaccept {0}; sudo lp -d "{0}" -t "{1}" {2}';
+const FORMAT = 'lpadmin -p "{0}" -v lpd://{0}@printing.andrew.cmu.edu/andrew -P public/CMUGeneric.ppd; cupsenable {0}; cupsaccept {0}; lp -d "{0}" -t "{1}" {2}';
 const SUCCESS = 'Printed file \'{1}\' for Andrew ID \'{0}\'! '
 const FAILURE = 'Error printing file: {0}'
 const REMOVE = 'rm "{0}"'
