@@ -4,13 +4,32 @@ block content
 	h1 Print
 	p Please choose file to print
 
-	form(action="/print" method="post" enctype="multipart/form-data")
+	form(action="/print" method="post")
 		div.form-group
 			label(for="id") Andrew ID
-			input(type="text" class="form-control" name="id" id="id" placeholder="Andrew ID")
+			input#id(type="text" class="form-control" name="id" placeholder="Andrew ID")
 		div.form-group
-			label(for="file") File to Print
-			input(type="file" class="form-control-file" name="file" id="file")
-		div.col-sm-12.form-group(style="padding: 0;")
+			label(for="printer") Orientation
+			select.form-control#printer(name="printer")
+				option(value="Andrew_Central_B_W") Andrew Central B&W
+				option(value="Andrew_Central_Color") Andrew Central Color
+		div.form-group
+			label(for="num_copies") Number of Copies
+			input#num_copies(type="text" class="form-control" name="num_copies" placeholder="Andrew ID" value="1")
+		div.form-group
+			label(for="range") Page Range
+			input#range(type="text" class="form-control" name="range" placeholder="Pages Range" value="")
+		div.form-group
+			label(for="orientation") Orientation
+			select.form-control#orientation(name="orientation")
+				option(value="") Portrait
+				option(value="landscape") Landscape
+		div.form-group
+			label(for="sides") Side Setup
+			select.form-control#sides(name="sides")
+				option(value="sides=one-sided") One Side
+				option(value="sides=two-sided-short-edge") Double Side on Short Edge
+				option(value="sides=two-sided-long-edge") Double Side on Long Edge
+		div.col-12.col-sm-12.form-group(style="padding: 0;")
 			button.btn.btn-block(type="submit" style="background-color: #bb0000; color: #ffffff;") Send
 
