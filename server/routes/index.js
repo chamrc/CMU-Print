@@ -16,7 +16,7 @@ if (!String.prototype.format) {
 }
 
 const UPLOAD_DIR = 'uploads';
-const URL_FORMAT = 'https://print.rcz.io/' + UPLOAD_DIR + '/{0}';
+const URL_FORMAT = '/' + UPLOAD_DIR + '/{0}';
 
 var upload = multer({
 	dest: 'public/{0}/'.format(UPLOAD_DIR)

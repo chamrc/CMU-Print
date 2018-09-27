@@ -1,4 +1,12 @@
-const socket = require('socket.io-client')('http://localhost:3000')
+const host;
+
+if (process.env.ENV === 'dev') {
+	host = 'http://localhost:3000';
+} else {
+	host = 'https://print.rcz.io'
+}
+
+const socket = require('socket.io-client')(host)
 
 const username = process.env.USERNAME || 'admin';
 const password = process.env.PASSWD;
