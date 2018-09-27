@@ -4,7 +4,7 @@ block content
 	h1 Print
 	p Please choose file to print
 
-	form(action="/print" method="post")
+	form(action="/print" method="post"  enctype="multipart/form-data")
 		div.form-group
 			label(for="id") Andrew ID
 			input#id(type="text" class="form-control" name="id" placeholder="Andrew ID")

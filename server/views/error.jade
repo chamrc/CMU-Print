@@ -1,0 +1,14 @@
+extends layout
+
+block content
+	br
+	br
+	h2= message
+	br
+	- if (typeof(content) !== 'undefined'){
+		h4= content
+	-}
+	- if (typeof(error) !== 'undefined'){
+		h3= error.status
+		pre #{error.stack}
+	-}

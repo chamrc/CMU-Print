@@ -8,9 +8,12 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
+const bcrypt = require('bcrypt');
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
+const auth = require('./sockets/auth');
+const ticket = require('./sockets/ticket');
 
 const prompt = require('./prompt');
 const User = require('./models/User');
@@ -21,6 +24,7 @@ initDB()
 	.then(initApp)
 	.then(initIO)
 	.then(configApp)
+	.then(configIO)
 	.then(startServer)
 	.then(() => {
 		console.log('DONE');
@@ -52,7 +56,7 @@ function initDB() {
 				]).then(([username, password]) => {
 					User.create({
 						username,
-						password
+						password: bcrypt.hashSync(password, 10)
 					}, (err, user) => {
 						if (user == null) reject(err);
 						else resolve(db);
@@ -94,6 +98,8 @@ function initIO([db, server, app]) {
 }
 
 function configApp([db, server, app, io]) {
+	app.set('host', 'print.rcz.io');
+
 	// view engine setup
 	app.set('views', path.join(__dirname, 'views'));
 	app.set('view engine', 'jade');
@@ -126,18 +132,25 @@ function configApp([db, server, app, io]) {
 		res.render('error');
 	});
 
-	io.on('connect', (socket) => {
-		console.log('client connected');
-		socket.on('handshake', (data) => {
-			console.log('received: ' + JSON.stringify(data, null, 4));
-			socket.emit('handshake', {
-				hello: 'client'
-			});
-		});
-	});
+	return [db, server, app, io];
+}
+
+function configIO([db, server, app, io]) {
+	auth(io);
+	ticket(io);
 
 	return [db, server, app, io];
 }
+// io.on('connect', (socket) => {
+// 	console.log('client connected');
+// 	socket.on('handshake', (data) => {
+// 		console.log('received: ' + JSON.stringify(data, null, 4));
+// 		socket.emit('handshake', {
+// 			hello: 'client'
+// 		});
+// 	});
+// });
+// }
 
 function startServer([db, server, app, io]) {
 	var port = normalizePort(process.env.PORT || '3000');
