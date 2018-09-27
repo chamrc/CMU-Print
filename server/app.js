@@ -152,10 +152,12 @@ function startServer([db, server, app, io]) {
 	server.on('listening', onListening(server));
 
 	if (!isDev) {
-		httpServer = express.createServer();
-		httpServer.get('*', (req, res) => {
+		httpApp = express();
+		httpApp.get('*', (req, res) => {
 			res.redirect('https://' + req.headers.host + req.url);
 		});
+
+		httpServer = http.createServer(httpApp);
 		httpServer.listen(80);
 	}
 }
