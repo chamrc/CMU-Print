@@ -24,6 +24,12 @@ const REMOVE = 'rm "{0}"'
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
+	var io = req.app.get('io');
+	io.emit('new_doc', {
+		filename: 'sample.pdf',
+		url: 'google.com',
+		options: ''
+	});
 	res.render('index', {});
 });
 
