@@ -144,7 +144,7 @@ function configIO([db, server, app, io]) {
 }
 
 function startServer([db, server, app, io]) {
-	var port = isDev ? 3000 : 443;
+	var port = isDev ? normalizePort(process.env.ENV || 3000) : 443;
 	app.set('port', port);
 
 	server.listen(port);
@@ -162,13 +162,13 @@ function startServer([db, server, app, io]) {
 	}
 }
 
-// function normalizePort(val) {
-// 	var port = parseInt(val, 10);
+function normalizePort(val) {
+	var port = parseInt(val, 10);
 
-// 	if (isNaN(port)) return val;
-// 	if (port >= 0) return port;
-// 	return false;
-// }
+	if (isNaN(port)) return val;
+	if (port >= 0) return port;
+	return false;
+}
 
 function onError(port) {
 	return (error) => {
