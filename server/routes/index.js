@@ -17,6 +17,7 @@ if (!String.prototype.format) {
 
 const UPLOAD_DIR = 'uploads';
 const URL_FORMAT = 'https://print.rcz.io/' + UPLOAD_DIR + '/{0}';
+
 var upload = multer({
 	dest: 'public/{0}/'.format(UPLOAD_DIR)
 });
@@ -71,11 +72,13 @@ router.post('/print', upload.single('file'), (req, res, next) => {
 	// 		size: 433994
 	// 	}
 	const filename = req.file.originalname;
-	const url = URL_FORMAT.format(req.file.filename);
+	const filepath = req.file.path;
+	const fileurl = URL_FORMAT.format(req.file.filename);
 
 	PrintTicket.create({
 		filename,
-		url,
+		filepath,
+		fileurl,
 		options
 	}, (err, ticket) => {
 		var io = req.app.get('io');

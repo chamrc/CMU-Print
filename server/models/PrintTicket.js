@@ -6,7 +6,11 @@ var PrintTicketSchema = new Schema({
 		type: String,
 		required: true
 	},
-	url: {
+	filepath: {
+		type: String,
+		required: true
+	},
+	fileurl: {
 		type: String,
 		required: true
 	},

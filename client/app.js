@@ -7,15 +7,16 @@ if (password == null) {
 	process.exit(-1);
 }
 
+socket.on('authenticated', function() {
+	console.log('Authenticated');
+});
+
 socket.on('connect', () => {
-	console.log(username);
-	console.log(password);
+	console.log('Connected');
+
 	socket.emit('authentication', {
 		username,
 		password
-	});
-	socket.on('authenticated', function() {
-		console.log('Authenticated');
 	});
 });
 
