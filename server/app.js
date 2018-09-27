@@ -144,29 +144,29 @@ function configIO([db, server, app, io]) {
 }
 
 function startServer([db, server, app, io]) {
-	var port = normalizePort(process.env.PORT || '3000');
+	var port = isDev ? 3000 : 443;
 	app.set('port', port);
 
 	server.listen(port);
 	server.on('error', onError(port));
 	server.on('listening', onListening(server));
+
+	if (!isDev) {
+		httpServer = express.createServer();
+		httpServer.get('*', (req, res) => {
+			res.redirect('https://' + req.headers.host + req.url);
+		});
+		httpServer.listen(80);
+	}
 }
 
-/**
- * Normalize a port into a number, string, or false.
- */
+// function normalizePort(val) {
+// 	var port = parseInt(val, 10);
 
-function normalizePort(val) {
-	var port = parseInt(val, 10);
-
-	if (isNaN(port)) return val;
-	if (port >= 0) return port;
-	return false;
-}
-
-/**
- * Event listener for HTTP server "error" event.
- */
+// 	if (isNaN(port)) return val;
+// 	if (port >= 0) return port;
+// 	return false;
+// }
 
 function onError(port) {
 	return (error) => {
@@ -193,10 +193,6 @@ function onError(port) {
 		}
 	};
 }
-
-/**
- * Event listener for HTTP server "listening" event.
- */
 
 function onListening(server) {
 	return () => {

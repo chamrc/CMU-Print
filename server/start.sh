@@ -1,1 +1,1 @@
-PORT=80 DEBUG=cmu-print:* forever start app.js
+PORT=443 DEBUG=cmu-print:* forever start app.js
