@@ -1,8 +1,8 @@
-var express = require('express');
-var router = express.Router();
-var exec = require('child_process').exec;
-var multer = require('multer');
-var PrintTicket = require('../models/PrintTicket');
+const express = require('express');
+const router = express.Router();
+const exec = require('child_process').exec;
+const multer = require('multer');
+const PrintTicket = require('../models/PrintTicket');
 
 if (!String.prototype.format) {
 	String.prototype.format = function() {
@@ -95,7 +95,7 @@ router.post('/print', upload.single('file'), (req, res, next) => {
 			io.emit('new_ticket', {
 				id: ticket._id.toString(),
 				filename,
-				url,
+				fileurl,
 				options
 			});
 			res.render('error', {

@@ -26,9 +26,7 @@ initDB()
 	.then(configApp)
 	.then(configIO)
 	.then(startServer)
-	.then(() => {
-		console.log('DONE');
-	}).catch((err) => {
+	.catch((err) => {
 		console.log(err);
 	});
 
@@ -137,20 +135,13 @@ function configApp([db, server, app, io]) {
 
 function configIO([db, server, app, io]) {
 	auth(io);
-	ticket(io);
+
+	io.on('connect', (socket) => {
+		ticket(socket);
+	});
 
 	return [db, server, app, io];
 }
-// io.on('connect', (socket) => {
-// 	console.log('client connected');
-// 	socket.on('handshake', (data) => {
-// 		console.log('received: ' + JSON.stringify(data, null, 4));
-// 		socket.emit('handshake', {
-// 			hello: 'client'
-// 		});
-// 	});
-// });
-// }
 
 function startServer([db, server, app, io]) {
 	var port = normalizePort(process.env.PORT || '3000');
@@ -208,9 +199,7 @@ function onError(error) {
 function onListening(server) {
 	return () => {
 		var addr = server.address();
-		var bind = typeof addr === 'string' ?
-			'pipe ' + addr :
-			'port ' + addr.port;
+		var bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port;
 		debug('Listening on ' + bind);
 	}
 }

@@ -1,4 +1,4 @@
-var socket = require('socket.io-client')('http://localhost:3000')
+const socket = require('socket.io-client')('http://localhost:3000')
 
 const username = process.env.USERNAME || 'admin';
 const password = process.env.PASSWD;
@@ -26,4 +26,8 @@ socket.on('disconnect', function() {
 
 socket.on('new_ticket', (data) => {
 	console.log(JSON.stringify(data, null, 4));
+
+	// socket.emit('completed_ticket', {
+	// 	id: data.id
+	// });
 });
