@@ -98,6 +98,12 @@ function initIO([db, server, app]) {
 function configApp([db, server, app, io]) {
 	app.set('host', 'print.rcz.io');
 
+	// set http auth
+	var httpUsername = process.env.KEY || 'ini';
+	var httpPassword = process.env.VAL || Math.random() * 1000000;
+	var basicAuth = require('basic-auth-connect');
+	app.use(basicAuth(httpUsername, httpPassword));
+
 	// view engine setup
 	app.set('views', path.join(__dirname, 'views'));
 	app.set('view engine', 'jade');
