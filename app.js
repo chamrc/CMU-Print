@@ -1,95 +1,152 @@
-var createError = require('http-errors');
-var fs = require('fs');
-var path = require('path');
-var http = require('http');
-var https = require('https');
-var debug = require('debug')('cmu-print:server');
-var express = require('express');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const createError = require('http-errors');
+const fs = require('fs');
+const path = require('path');
+const http = require('http');
+const https = require('https');
+const debug = require('debug')('cmu-print:server');
+const express = require('express');
+const mongoose = require('mongoose');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+const indexRouter = require('./routes/index');
+const usersRouter = require('./routes/users');
 
-var app = express();
-var server;
+const prompt = require('./prompt');
+const User = require('./models/User');
 
-if (process.env.ENV == 'dev') {
-	server = http.createServer(app);
-} else {
-	const prefix = '/home/ubuntu/certificates/config/live/print.rcz.io/'
-	const privateKey = fs.readFileSync(prefix + 'privkey.pem', 'utf8');
-	const certificate = fs.readFileSync(prefix + 'cert.pem', 'utf8');
-	const ca = fs.readFileSync(prefix + 'chain.pem', 'utf8');
+const isDev = process.env.ENV == 'dev';
 
-	server = https.createServer({
-		key: privateKey,
-		cert: certificate,
-		ca: ca
-	}, app);
-}
+initDB()
+	.then(initApp)
+	.then(initIO)
+	.then(configApp)
+	.then(startServer)
+	.then(() => {
+		console.log('DONE');
+	}).catch((err) => {
+		console.log(err);
+	});
 
-var io = require('socket.io')(server);
-app.set('io', io);
+function initDB() {
+	return new Promise((resolve, reject) => {
+		if (isDev) mongoose.connect('mongodb://127.0.0.1/cmu-print-dev', {
+			useNewUrlParser: true
+		});
+		else mongoose.connect('mongodb://127.0.0.1/cmu-print', {
+			useNewUrlParser: true
+		});
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+		var db = mongoose.connection;
+		mongoose.Promise = global.Promise;
+		db.on('error', (err) => {
+			reject(err);
+		});
 
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({
-	extended: false
-}));
-app.use(cookieParser());
-app.use(express.static(__dirname + '/node_modules/bootstrap/dist'));
-app.use(express.static(path.join(__dirname, 'public')));
-
-app.disable('etag');
-app.use('/', indexRouter);
-
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-	next(createError(404));
-});
-
-// error handler
-app.use(function(err, req, res, next) {
-	// set locals, only providing error in development
-	res.locals.message = err.message;
-	res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-	// render the error page
-	res.status(err.status || 500);
-	res.render('error');
-});
-
-io.on('connect', (socket) => {
-	console.log('client connected');
-	socket.on('handshake', (data) => {
-		console.log('received: ' + JSON.stringify(data, null, 4));
-		socket.emit('handshake', {
-			hello: 'client'
+		User.findOne().exec((err, user) => {
+			if (user == null) {
+				console.log('NO USER');
+				prompt([
+					'Please enter username for admin: ',
+					'Please enter password for admin: '
+				]).then(([username, password]) => {
+					User.create({
+						username,
+						password
+					}, (err, user) => {
+						if (user == null) reject(err);
+						else resolve(db);
+					});
+				});
+			} else {
+				if (err) reject(err);
+				else resolve(db);
+			}
 		});
 	});
-});
+}
 
+function initApp(db) {
+	var app = express();
+	var server;
+	if (isDev) {
+		server = http.createServer(app);
+	} else {
+		const prefix = '/home/ubuntu/certificates/config/live/print.rcz.io/'
+		const privateKey = fs.readFileSync(prefix + 'privkey.pem', 'utf8');
+		const certificate = fs.readFileSync(prefix + 'cert.pem', 'utf8');
+		const ca = fs.readFileSync(prefix + 'chain.pem', 'utf8');
 
+		server = https.createServer({
+			key: privateKey,
+			cert: certificate,
+			ca: ca
+		}, app);
+	}
 
-/**
- * Get port from environment and store in Express.
- */
+	return [db, server, app];
+}
 
-var port = normalizePort(process.env.PORT || '3000');
-app.set('port', port);
+function initIO([db, server, app]) {
+	var io = require('socket.io')(server);
+	app.set('io', io);
+	return [db, server, app, io];
+}
 
-/**
- * Listen on provided port, on all network interfaces.
- */
+function configApp([db, server, app, io]) {
+	// view engine setup
+	app.set('views', path.join(__dirname, 'views'));
+	app.set('view engine', 'jade');
 
-server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
+	app.use(logger('dev'));
+	app.use(express.json());
+	app.use(express.urlencoded({
+		extended: false
+	}));
+	app.use(cookieParser());
+	app.use(express.static(__dirname + '/node_modules/bootstrap/dist'));
+	app.use(express.static(path.join(__dirname, 'public')));
+
+	app.disable('etag');
+	app.use('/', indexRouter);
+
+	// catch 404 and forward to error handler
+	app.use(function(req, res, next) {
+		next(createError(404));
+	});
+
+	// error handler
+	app.use(function(err, req, res, next) {
+		// set locals, only providing error in development
+		res.locals.message = err.message;
+		res.locals.error = req.app.get('env') === 'development' ? err : {};
+
+		// render the error page
+		res.status(err.status || 500);
+		res.render('error');
+	});
+
+	io.on('connect', (socket) => {
+		console.log('client connected');
+		socket.on('handshake', (data) => {
+			console.log('received: ' + JSON.stringify(data, null, 4));
+			socket.emit('handshake', {
+				hello: 'client'
+			});
+		});
+	});
+
+	return [db, server, app, io];
+}
+
+function startServer([db, server, app, io]) {
+	var port = normalizePort(process.env.PORT || '3000');
+	app.set('port', port);
+
+	server.listen(port);
+	server.on('error', onError);
+	server.on('listening', onListening(server));
+}
 
 /**
  * Normalize a port into a number, string, or false.
@@ -135,10 +192,12 @@ function onError(error) {
  * Event listener for HTTP server "listening" event.
  */
 
-function onListening() {
-	var addr = server.address();
-	var bind = typeof addr === 'string' ?
-		'pipe ' + addr :
-		'port ' + addr.port;
-	debug('Listening on ' + bind);
+function onListening(server) {
+	return () => {
+		var addr = server.address();
+		var bind = typeof addr === 'string' ?
+			'pipe ' + addr :
+			'port ' + addr.port;
+		debug('Listening on ' + bind);
+	}
 }
