@@ -1,11 +1,13 @@
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
+const https = require('https');
 const exec = require('child_process').exec;
 const mkdirp = require('mkdirp');
 
 var HOST, SLEEP_TIME;
-if (process.env.ENV === 'dev') {
+const isDev = process.env.ENV === 'dev';
+if (isDev) {
 	HOST = 'http://localhost:3000';
 	SLEEP_TIME = 10000; // 10 seconds: 10 * 1000
 } else {
@@ -93,7 +95,8 @@ function download(fileurl, filepath) {
 			}
 
 			var file = fs.createWriteStream(filepath);
-			var req = http.get(fileurl, function(res) {
+			var HTTP = isDev ? http : https;
+			var req = https.get(fileurl, function(res) {
 				res.pipe(file);
 				file.on('finish', function() {
 					file.close(() => {
