@@ -137,7 +137,7 @@ function configIO([db, server, app, io]) {
 	auth(io);
 
 	io.on('connect', (socket) => {
-		ticket(socket);
+		ticket(io, socket);
 	});
 
 	return [db, server, app, io];

@@ -3,7 +3,7 @@ const debug = require('debug')('cmu-print:server');
 const ObjectId = require('mongoose').Types.ObjectId;
 const PrintTicket = require('../models/PrintTicket');
 
-function ticket(socket) {
+function ticket(io, socket) {
 	socket.on('completed_ticket', (data) => {
 		if (!data.id) return;
 
@@ -27,6 +27,21 @@ function ticket(socket) {
 			});
 
 			console.log(ticket);
+		});
+	});
+
+	// Check for unfinished print tickets
+	PrintTicket.find({
+		completed: false
+	}, (err, tickets) => {
+		if (!tickets) return;
+		tickets.forEach((ticket) => {
+			socket.emit('new_ticket', {
+				id: ticket._id.toString(),
+				filename: ticket.filename,
+				fileurl: ticket.fileurl,
+				options: ticket.options
+			});
 		});
 	});
 }
