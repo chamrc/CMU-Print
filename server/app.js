@@ -101,6 +101,8 @@ function configApp([db, server, app, io]) {
 	// set http auth
 	var httpUsername = process.env.KEY || 'ini';
 	var httpPassword = process.env.VAL || Math.random() * 1000000;
+	if (process.env.VAL == null)
+		console.log('Warning: http password not set, using a random password instead.');
 	var basicAuth = require('basic-auth-connect');
 	app.use(basicAuth(httpUsername, httpPassword));
 
