@@ -14,7 +14,7 @@ if (isDev) {
 	HOST = 'https://print.rcz.io';
 	SLEEP_TIME = 600000; // 10 minutes: 10 * 60 * 1000
 }
-const FILE_FORMAT = __dirname + 'downloads/{0}';
+const FILE_FORMAT = __dirname + '/downloads/{0}';
 const COMMAND_FORMAT = 'lp {0} -t "{1}" {2}'
 
 const socket = require('socket.io-client')(HOST)
